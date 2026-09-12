@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicLens - Civic Issue Reporting Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 24px;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 220px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 24px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .main {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 0.1%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, #667eea 0.05%, #764ba2 0.1%);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.15);
+        }
+
+        .upload-area.active {
+            border-color: #764ba2;
+            background: #f0f0ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-weight: 600;
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            margin-right: 12px;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            box-shadow: none;
+        }
+
+        .button.secondary:hover {
+            background: #f5f7fa;
+        }
+
+        .button.danger {
+            background: #ff6b6b;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .card.success {
+            border-left: 5px solid #51cf66;
+            background: #f0fdf4;
+        }
+
+        .card.warning {
+            border-left: 5px solid #ffa94d;
+            background: #fffbf0;
+        }
+
+        .card.danger {
+            border-left: 5px solid #ff6b6b;
+            background: #fff5f5;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 12px;
+        }
+
+        .card-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-top: 6px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-right: 10px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            gap: 16px;
+        }
+
+        .step-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .step-content {
+            flex: 1;
+            padding-top: 4px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .authority-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 0.1%);
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .authority-box:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .authority-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .authority-level {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+
+        .timeline-item.completed::before {
+            background: #51cf66;
+            box-shadow: 0 0 0 2px #51cf66;
+        }
+
+        .timeline-title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .timeline-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .issue-row {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .issue-row:hover {
+            background: #f5f7fa;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .issue-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .issue-details {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.in-progress {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-badge.resolved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.escalated {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .map-placeholder {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 24px;
+            border: 1px dashed #999;
+        }
+
+        .map-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .map-text {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .arrow {
+            text-align: center;
+            color: #999;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                gap: 16px;
+                height: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                display: flex;
+                gap: 12px;
+                overflow-x: auto;
+            }
+
+            .main {
+                min-height: 100vh;
+                padding: 24px;
+            }
+
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header {
+                font-size: 24px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-logo">🏛️ CivicLens</div>
+            <div class="nav-item active" onclick="showScreen('upload', this)">📸 Report Issue</div>
+            <div class="nav-item" onclick="showScreen('detection', this)">🤖 AI Detection</div>
+            <div class="nav-item" onclick="showScreen('jurisdiction', this)">🗺️ Jurisdiction</div>
+            <div class="nav-item" onclick="showScreen('authority', this)">👤 Authority</div>
+            <div class="nav-item" onclick="showScreen('tracking', this)">⏱️ Tracking</div>
+            <div class="nav-item" onclick="showScreen('escalation', this)">📈 Escalation</div>
+            <div class="nav-item" onclick="showScreen('dashboard', this)">📊 Dashboard</div>
+        </div>
+
+        <div class="main">
+            <!-- UPLOAD SCREEN -->
+            <div id="upload" class="screen active">
+                <div class="header">📸 Report a Civic Issue</div>
+                <p class="subtitle">Take a photo of the problem and let CivicLens automatically identify it, route it to the right authority, and track the resolution.</p>
+                
+                <div class="upload-area" onclick="simulateUpload()" style="cursor: pointer;">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">Click to upload or drag photo</div>
+                    <div class="upload-subtext">GPS location will be automatically captured</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Common Issues We Detect</div>
+                    <div>
+                        <span class="tag">Garbage accumulation</span>
+                        <span class="tag">Broken streetlight</span>
+                        <span class="tag">Pothole</span>
+                        <span class="tag">Open drain</span>
+                        <span class="tag">Water leakage</span>
+                        <span class="tag">Illegal dumping</span>
+                    </div>
+                </div>
+
+                <button class="button" onclick="simulateUpload()">📤 Simulate Photo Upload</button>
+            </div>
+
+            <!-- DETECTION SCREEN -->
+            <div id="detection" class="screen">
+                <div class="header">🤖 AI Issue Detection</div>
+                <p class="subtitle">Computer vision analysis of your image</p>
+                
+                <div class="card success">
+                    <div class="card-title">✓ Issue Detected Successfully</div>
+                    <div>
+                        <div>
+                            <div class="card-label">Issue Type</div>
+                            <div class="card-value">Uncollected Garbage & Debris</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Confidence Score</div>
+                            <div class="card-value">94%</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Severity Level</div>
+                            <div class="card-value">🔴 High</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Estimated Category</div>
+                            <div class="card-value">Municipal Sanitation</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📋 AI Analysis Details</div>
+                    <div style="font-size: 14px; line-height: 1.8; color: #666;">
+                        ✓ Large accumulation of mixed waste visible<br/>
+                        ✓ Plastic bags and debris scattered<br/>
+                        ✓ Area appears to be a roadside junction<br/>
+                        ✓ No collection bins visible<br/>
+                        ✓ Immediate attention recommended
+                    </div>
+                </div>
+
+                <button class="button" onclick="showScreen('jurisdiction', event.target)">Continue to Jurisdiction →</button>
+                <button class="button secondary" onclick="showScreen('upload', event.target)">Upload Different Photo</button>
+            </div>
+
+            <!-- JURISDICTION SCREEN -->
+            <div id="jurisdiction" class="screen">
+                <div class="header">🗺️ Location & Jurisdiction</div>
+                <p class="subtitle">Automatic identification of responsible administration</p>
+                
+                <div class="card">
+                    <div class="card-title">📍 GPS Coordinates</div>
+                    <div style="margin-top: 12px; font-family: 'Courier New', monospace; font-size: 13px; color: #666; line-height: 1.8;">
+                        Latitude: 28.4595° N<br/>
+                        Longitude: 77.0266° E<br/>
+                        Accuracy: ±5 meters
+                    </div>
+                </div>
+
+                <div class="map-placeholder">
+                    <div class="map-icon">🗺️</div>
+                    <div class="map-text">Map showing Ward 42, North Delhi</div>
+                    <div style="font-size: 12px; color: #ccc; margin-top: 8px;">(Interactive map would render here)</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">🏛️ Identified Jurisdiction</div>
+                    <div>
+                        <div>
+                            <div class="card-label">Municipal Corporation</div>
+                            <div class="card-value">North Delhi Municipal Corporation (NDMC)</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Zone</div>
+                            <div class="card-value">Civil Lines Zone</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Ward</div>
+                            <div class="card-value">Ward 42 (Chandni Chowk)</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Assembly Constituency (MLA)</div>
+                            <div class="card-value">Chandni Chowk</div>
+                        </div>
+                        <div>
+                            <div class="card-label">Parliamentary Constituency (MP)</div>
+                            <div class="card-value">New Delhi</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="button" onclick="showScreen('authority', event.target)">Next: Identify Authority →</button>
+            </div>
+
+            <!-- AUTHORITY SCREEN -->
+            <div id="authority" class="screen">
+                <div class="header">👤 Responsible Authority</div>
+                <p class="subtitle">Routing to the right department for action</p>
+                
+                <div class="card">
+                    <div class="card-title">🔗 Authority Hierarchy</div>
+                    <div style="margin-top: 16px;">
+                        <div class="authority-box">
+                            <div class="authority-name">Sanitation Department</div>
+                            <div class="authority-level">Municipal Solid Waste Management</div>
+                            <div class="card-label" style="margin-top: 8px;">📧 sanitation@ndmc.gov.in</div>
+                            <div class="card-label">📞 +91-11-XXXX-XXXX</div>
+                        </div>
+
+                        <div class="arrow">↓ Routes to ↓</div>
+
+                        <div class="authority-box">
+                            <div class="authority-name">Ward 42 Office</div>
+                            <div class="authority-level">Local Administration</div>
+                            <div class="card-label" style="margin-top: 8px;">Officer: Amit Singh</div>
+                            <div class="card-label">📧 ward42@ndmc.gov.in</div>
+                        </div>
+
+                        <div class="arrow">↓ Assigns to ↓</div>
+
+                        <div class="authority-box">
+                            <div class="authority-name">Collection Team</div>
+                            <div class="authority-level">Field Sanitation Crew</div>
+                            <div class="card-label" style="margin-top: 8px;">Supervisor: Vikram Patel</div>
+                            <div class="card-label">Team ID: SW-42-001</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card warning">
+                    <div class="card-title">⏰ Service Level Agreement (SLA)</div>
+                    <div style="margin-top: 12px;">
+                        <div>
+                            <span style="color: #666;">Expected Resolution Time:</span>
+                            <span style="font-weight: 600; margin-left: 4px;">48 hours</span>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <span style="color: #666;">Priority Level:</span>
+                            <span style="font-weight: 600; margin-left: 4px;">High (Due to severity)</span>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <span style="color: #666;">Acknowledgment Within:</span>
+                            <span style="font-weight: 600; margin-left: 4px;">24 hours</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="button" onclick="submitComplaint()">✓ Submit Complaint</button>
+            </div>
+
+            <!-- TRACKING SCREEN -->
+            <div id="tracking" class="screen">
+                <div class="header">⏱️ Complaint Tracking</div>
+                <p class="subtitle">Real-time status and SLA monitoring</p>
+                
+                <div class="card success">
+                    <div class="card-title">✓ Complaint #CIV-28491</div>
+                    <div style="margin-top: 16px;">
+                        <div>
+                            <div class="card-label">Status</div>
+                            <div class="card-value">🟡 Acknowledged</div>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <div class="card-label">Current Handler</div>
+                            <div class="card-value">Ward 42 Office - Amit Singh</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📊 SLA Status</div>
+                    <div style="margin-top: 12px;">
+                        <div>
+                            <div class="card-label">Time Elapsed</div>
+                            <div class="card-value">12 hours 45 minutes</div>
+                        </div>
+                        <div class="progress-bar" style="margin: 12px 0;">
+                            <div class="progress-fill" style="width: 27%;"></div>
+                        </div>
+                        <div>
+                            <div class="card-label">Time Remaining (SLA)</div>
+                            <div class="card-value">35 hours 15 minutes remaining</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📅 Timeline</div>
+                    <div class="timeline" style="margin-top: 20px;">
+                        <div class="timeline-item completed">
+                            <div class="timeline-title">Issue Reported</div>
+                            <div class="timeline-time">Today at 10:30 AM</div>
+                        </div>
+                        <div class="timeline-item completed">
+                            <div class="timeline-title">AI Detection Complete</div>
+                            <div class="timeline-time">Today at 10:31 AM</div>
+                        </div>
+                        <div class="timeline-item completed">
+                            <div class="timeline-title">Routed to Ward 42</div>
+                            <div class="timeline-time">Today at 10:32 AM</div>
+                        </div>
+                        <div class="timeline-item completed">
+                            <div class="timeline-title">Acknowledged by Ward Officer</div>
+                            <div class="timeline-time">Today at 11:15 AM</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-title">🔜 In Progress - Collection scheduled</div>
+                            <div class="timeline-time">Expected: Tomorrow 9:00 AM</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-title">Resolution & Before-After Photos</div>
+                            <div class="timeline-time">Expected: Tomorrow 11:00 AM</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="button secondary" onclick="showScreen('escalation', event.target)">View Escalation Rules →</button>
+            </div>
+
+            <!-- ESCALATION SCREEN -->
+            <div id="escalation" class="screen">
+                <div class="header">📈 Escalation Rules</div>
+                <p class="subtitle">Automatic escalation for accountability when SLA is not met</p>
+                
+                <div class="card">
+                    <div class="card-title">🎯 Escalation Hierarchy</div>
+                    <div style="margin-top: 20px;">
+                        <div class="flow-step">
+                            <div class="step-icon">1</div>
+                            <div class="step-content">
+                                <div class="step-title">Ward Officer (24h SLA)</div>
+                                <div class="step-desc">Local acknowledgment & action initiation</div>
+                            </div>
+                        </div>
+
+                        <div style="text-align: center; color: #999; margin: 8px 0; font-size: 13px;">↓ If not resolved in 24 hours ↓</div>
+
+                        <div class="flow-step">
+                            <div class="step-icon">2</div>
+                            <div class="step-content">
+                                <div class="step-title">Municipal Commissioner (48h SLA)</div>
+                                <div class="step-desc">Division level oversight & acceleration</div>
+                            </div>
+                        </div>
+
+                        <div style="text-align: center; color: #999; margin: 8px 0; font-size: 13px;">↓ If not resolved in 48 hours ↓</div>
+
+                        <div class="flow-step">
+                            <div class="step-icon">3</div>
+                            <div class="step-content">
+                                <div class="step-title">Chief Administrator (72h SLA)</div>
+                                <div class="step-desc">City-wide intervention & public notification</div>
+                            </div>
+                        </div>
+
+                        <div style="text-align: center; color: #999; margin: 8px 0; font-size: 13px;">↓ If not resolved in 72 hours ↓</div>
+
+                        <div class="flow-step">
+                            <div class="step-icon">4</div>
+                            <div class="step-content">
+                                <div class="step-title">Media & Citizen Alert</div>
+                                <div class="step-desc">Public visibility & MLA/MP notification</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card warning">
+                    <div class="card-title">⚠️ Current Status: No Escalation Needed</div>
+                    <div style="margin-top: 12px; font-size: 14px; line-height: 1.6;">
+                        Issue is on track for resolution. If not resolved by <strong>Tomorrow 10:30 AM</strong>, automatic escalation to Municipal Commissioner will trigger.
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">🔓 Public Accountability Features</div>
+                    <div style="margin-top: 12px; font-size: 14px; line-height: 1.8; color: #666;">
+                        ✓ Citizens can track all issues in their ward<br/>
+                        ✓ Performance metrics published monthly<br/>
+                        ✓ Escalated issues flagged on public dashboard<br/>
+                        ✓ Authority names & contact visible to all
+                    </div>
+                </div>
+
+                <button class="button" onclick="showScreen('dashboard', event.target)">View Public Dashboard →</button>
+            </div>
+
+            <!-- DASHBOARD SCREEN -->
+            <div id="dashboard" class="screen">
+                <div class="header">📊 Public Accountability Dashboard</div>
+                <p class="subtitle">City-wide civic issue tracking and resolution metrics</p>
+                
+                <div class="grid">
+                    <div class="stat-card">
+                        <div class="stat-value">247</div>
+                        <div class="stat-label">Total Issues Reported</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">189</div>
+                        <div class="stat-label">Resolved</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">42</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">16</div>
+                        <div class="stat-label">Escalated</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-title">🏘️ Top Issues by Ward</div>
+                    <div style="margin-top: 16px;">
+                        <div class="issue-row">
+                            <div>
+                                <div class="issue-title">Ward 42 (Chandni Chowk)</div>
+                                <div class="issue-details">18 issues | 12 resolved | 3 escalated</div>
+                            </div>
+                            <span class="status-badge escalated">3 Escalated</span>
+                        </div>
+                        <div class="issue-row">
+                            <div>
+                                <div class="issue-title">Ward 35 (ITO)</div>
+                                <div class="issue-details">16 issues | 14 resolved | 0 escalated</div>
+                            </div>
+                            <span class="status-badge resolved">On Track</span>
+                        </div>
+                        <div class="issue-row">
+                            <div>
+                                <div class="issue-title">Ward 28 (Karol Bagh)</div>
+                                <div class="issue-details">22 issues | 18 resolved | 2 escalated</div>
+                            </div>
+                            <span class="status-badge in-progress">2 Escalated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">⏱️ Average Resolution Time by Category</div>
+                    <div style="margin-top: 16px;">
+                        <div style="margin-bottom: 20px;">
+                            <div style="font-size: 14px; font-weight: 500; margin-bottom: 6px;">Garbage / Waste</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%;"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #999; margin-top: 6px;">18 hrs avg (SLA: 48hrs) ✓</div>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <div style="font-size: 14px; font-weight: 500; margin-bottom: 6px;">Streetlight / Power</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%;"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #999; margin-top: 6px;">31 hrs avg (SLA: 72hrs) ✓</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 500; margin-bottom: 6px;">Potholes / Road</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 72%;"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #999; margin-top: 6px;">52 hrs avg (SLA: 72hrs) ⚠️</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card danger">
+                    <div class="card-title">🚨 Escalated Issues Requiring Attention</div>
+                    <div style="margin-top: 16px;">
+                        <div style="padding: 12px; background: #fff5f5; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #ff6b6b;">
+                            <div style="font-weight: 500; margin-bottom: 4px;">#CIV-28421 - Water Leakage, Ward 42</div>
+                            <div style="font-size: 13px; color: #999;">Escalated 36hrs ago | Next: Commissioner review</div>
+                        </div>
+                        <div style="padding: 12px; background: #fff5f5; border-radius: 8px; border-left: 4px solid #ff6b6b;">
+                            <div style="font-weight: 500; margin-bottom: 4px;">#CIV-28404 - Illegal Dumping, Ward 28</div>
+                            <div style="font-size: 13px; color: #999;">Escalated 42hrs ago | In review with Chief Admin</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="button" onclick="showScreen('upload', event.target)">📸 Report Another Issue</button>
+                <div class="footer">
+                    <p>🏛️ CivicLens - Civic Issue Tracking Platform | Powered by AI & Geospatial Data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenName, element) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.classList.remove('active'));
+            document.getElementById(screenName).classList.add('active');
+
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(n => n.classList.remove('active'));
+            if (element && element.classList) {
+                element.classList.add('active');
+            } else {
+                document.querySelector(`[onclick*="${screenName}"]`).classList.add('active');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function simulateUpload() {
+            const uploadArea = document.querySelector('.upload-area');
+            uploadArea.style.pointerEvents = 'none';
+            uploadArea.innerHTML = '<div style="font-size: 28px; animation: spin 1s linear infinite;">⏳</div><div>Simulating photo capture...</div>';
+            
+            setTimeout(() => {
+                uploadArea.style.pointerEvents = 'auto';
+                showScreen('detection', null);
+            }, 2000);
+        }
+
+        function submitComplaint() {
+            const complaintCard = document.querySelector('#authority .card.success');
+            if (complaintCard) {
+                complaintCard.classList.add('success');
+                complaintCard.innerHTML = '<div class="card-title">✓ Complaint Submitted Successfully!</div><div style="margin-top: 12px; font-weight: 500; color: #51cf66;">Complaint #CIV-28491 has been created and routed to Ward 42 Office.</div>';
+            }
+            setTimeout(() => {
+                showScreen('tracking', null);
+            }, 1500);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </script>
+</body>
+</html>
